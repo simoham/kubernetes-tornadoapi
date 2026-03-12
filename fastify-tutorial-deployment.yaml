@@ -1,0 +1,40 @@
+# To deploy: kubectl create -f fastifyapi-hello-world-deployment.yaml
+# Access it with the API as a proxy:
+# $ kubectl proxy
+# Then in you browser: http://localhost:8001/api/v1/namespaces/default/services/fastifyapi:/proxy/#!/
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: fastifyapi
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 8076
+    targetPort: 3000
+    nodePort: 30003
+  selector:
+    app: fastifyapi
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastifyapi
+spec:
+  selector:
+    matchLabels:
+      app: fastifyapi
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: fastifyapi
+    spec:
+      containers:
+      - image: localhost:5000/fastify:v1.0
+        name: fastifyapi
+        ports:
+        - containerPort: 3000
+          name: fastifyapi
